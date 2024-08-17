@@ -1,0 +1,189 @@
+<div class="step-text">
+<p>In this topic, we are going to learn more about text normalization, one of the steps of text preprocessing. Let's imagine that we have some text and want to count all instances of the verb "play". Sounds easy, right? What about word forms like "played<em>"</em>, "plays<em>"</em>, or "playing<em>"</em>? They are all forms of one single verb. We can count them manually if our text is short, but with big data, it is just not possible. This is where <strong>text normalization</strong> (or <strong>word normalization) </strong>steps in. The main idea is to reduce different forms of one word to a single form. With this algorithm all forms like "plays", "playing", or "played" will be changed to "play".</p><p>There are two approaches to text normalization: <strong>stemming</strong> and <strong>lemmatization</strong>. Both are widely used in information retrieval tasks, search engines, topic modeling, and other NLP applications. In the upcoming sections, we will discuss the differences between the approaches, as well as their implementations in the NLTK library.</p><p>Note that before stemming or lemmatization, it is better to tokenize your text and get rid of digits and punctuation marks. Otherwise, most algorithms will recognize "play!" not as "play", but rather as an unknown word, so it will not be processed correctly.</p><h5 id="word-stem-vs-lemma">Word Stem vs Lemma</h5><p><strong>Word stem</strong> is a part of the inflected word that is responsible for its lexical meaning. It is the base word form of one lexeme. A word stem might not be a real word. In other words, a word stem is a word form with no affixes. The term is interchangeable with the word root.</p><p>In most cases, a word stem doesn't change during declension. But there are exceptions in different languages. For example, irregular verbs in English.</p><p>Lemma is a valid word form. It is sometimes called a dictionary form or a canonical form. A lemma is the form of the word that you see in the dictionary. For example the words "did" , "done", "doing", "do" have one common lemma — "(to) do".</p><p>Adjectives, nouns, and pronouns are generally represented in lemmas as nominative case singular number form. </p><p>Verbs in most European languages (French, Russian, Italian) and many others (Persian) use their infinitive forms as lemmas, but be careful, it is not a universal rule. For example, Latin dictionaries display verbs as 1st person singulars in the present tense. Let's check it on a particular Latin verb: "credit" is a 3rd person singular form of the present tense verb (meaning "He believes"), the infinitive is "credere" (meaning "to believe"), but the lemma is "credo", a 1st person singular form of the present tense (meaning "I believe"). This rule is also true for Ancient Greek verbs, though many dictionaries give six principal forms of any verb. </p><p>Lemma is very important for inflective languages, like Latin, Russian and Hungarian. In English, lemmas may be useful for irregular verbs since most stemmers cannot identify stems in verbs like <code class="language-python">flew</code>.</p><h5 id="stemming-in-nltk">Stemming in NLTK</h5><p>A stem<strong> </strong>is the most important part of the word, and other word parts (<strong>affixes</strong><em>) </em>are added to it. For instance, if we take "play<em>"</em> and add the affix "-ed<em>"</em> to it, we get the past form of the verb.</p><p>There are many ways to carry out stemming. Complex methods, like <code class="language-python">NLTK</code> and other NLP libraries, are based on a handful of them. The first way is just suffix-stripping. This algorithm is based on a list of suffixes that pertain to a certain language. If you detect that <code class="language-python">played</code> is a verb (and if we know that in English — <code class="language-python">-ed</code> endings are common), then we can strip off this ending. The other case is when you have the verb <code class="language-python">increased</code>. A stemmer will detect that it is a verb and that it has an ending <code class="language-python">-ed</code>, but in the end, you'll get <code class="language-python">increas</code>. Some approaches don't require the base form of the word to match the real word form, and then it's okay. So does, for example, Snowball Stemmer. Alternatively, a stemmer could give a real word form in the output. Then, we may set a list of all word base forms. A stemmer will delete the last letter and then check if the given form matches any of the words in the list and will repeat this circle until it gets a real word form. In the example above, the stemmer will delete the first letter from the right side just once: <code class="language-python">increase</code>.</p><p>More elaborate stemmers may replace one popular ending with another: for example, the noun <code class="language-python">friendliness</code> can be stemmed as <code class="language-python">friendly</code> if you replace ending <code class="language-python">-liness</code> by <code class="language-python">-ly</code>. Most stemmers, though, are not so advanced, so you'll end up with just <code class="language-python">friendli</code>. This approach is very close to another complex approach to text normalization — lemmatization.</p><p>Let's see how to carry it out using NLTK. It has different algorithms for stemming and we will learn how to use them. First, we need to import the library:</p><pre><code class="language-python">import nltk</code></pre><p>For the English language, we normally use the Porter stemmer and the Lancaster stemmer. You can find these and some other stemming algorithms in the <code class="language-python">nltk.stem</code> module.</p><p>The <strong>Porter stemmer</strong> is the earliest and the most popular algorithm for this task. To use it, we need to import the <code class="language-python">PorterStemmer</code> class from the <code class="language-python">nltk.stem</code> module and then create an object for this class. It is used only for English. After that we call the <code class="language-python">stem()</code> method and put the word in brackets:</p><pre><code class="language-python">from nltk.stem import PorterStemmer
+
+
+porter = PorterStemmer()
+porter.stem('played')   # play
+porter.stem('playing')  # play</code></pre><p>The <strong>Snowball stemmer</strong> can be seen as an improvement over the original Porter stemmer as it gives slightly better results. The <code class="language-python">SnowballStemmer</code> class in NLTK also supports 13 non-English languages such as Spanish, French, Russian, German, Swedish, and others. To use this algorithm, we need to create a new instance of the class and specify the language.</p><pre><code class="language-python">from nltk.stem import SnowballStemmer
+
+
+snowball = SnowballStemmer('english')
+snowball.stem('playing')  # play
+snowball.stem('played')   # play</code></pre><p>As we said earlier, the Snowball stemmer works better than Porter. Let's compare the examples below:</p><pre><code class="language-python">snowball.stem('generously')   # generous
+porter.stem('generously')     # gener
+
+snowball.stem('dangerously')  # danger
+porter.stem('dangerously')    # danger</code></pre><p>The Porter stemmer would remove not only the affix "<em>-ly" </em>but also "<em>-ous" </em>from the input, as it would do for the word "<em>dangerously"</em>. In this case, it is unnecessary and incorrect. The Snowball stemmer provides a better result for the word "<em>generously"</em>.</p><p>NLTK also has the implementation of the Lancaster or Paice-Husk stemming algorithm. To use the <strong>Lancaster stemmer</strong>, we need to do the same as before, but now we need to import the <code class="language-python">LancasterStemmer</code> class from the <code class="language-python">nltk.stem</code> package:</p><pre><code class="language-python">from nltk.stem import LancasterStemmer
+
+
+lancaster = LancasterStemmer()  
+lancaster.stem('played')       # play
+lancaster.stem('playing')      # play
+lancaster.stem('generously' )  # gen
+lancaster.stem('dangerously')  # dang</code></pre><p>All stemmers are quite similar, but the original Porter stemmer and Snowball stemmer provide better results, while the Lancaster stemmer works faster. So, if you are working with really big text data and need to process it in a short time, use Lancaster Stemmer. If you need more accurate results — choose the Snowball or Porter stemmers.</p><p>Let's see how Snowball Stemmer works with different parts-of-speech. First, let's check adjectives.</p><pre><code class="language-python">adjs = [
+    "effective",
+    "dangerous",
+    "careful",
+    "monetary",
+    "kind",
+    "supportive",
+    "rarer",
+    "rarest",
+]
+for a in adjs:
+    print(a, " --&gt; ", snowball.stem(a))
+
+
+#  effective  --&gt;  effect
+#  dangerous  --&gt;  danger
+#  careful  --&gt;  care
+#  monetary  --&gt;  monetari
+#  kind  --&gt;  kind
+#  supportive  --&gt;  support
+#  rarer  --&gt;  rarer
+#  rarest  --&gt;  rarest</code></pre><p>So, Snowball Stemmer converts most adjectives into nouns, except for comparative, superlative, and ones with ending <code class="language-python">-ed</code>. Now let's check nouns:</p><pre><code class="language-python">nouns = [
+    "wall",
+    "handcraftsman",
+    "reservoir",
+    "airport",
+    "foundation",
+    "trichotillomania",
+    "jewelry",
+    "Frenchman",
+    "chopper",
+    "supercars",
+    "men",
+]
+for a in nouns:
+    print(a, " --&gt; ", snowball.stem(a))
+
+#  wall  --&gt;  wall
+#  handcraftsman  --&gt;  handcraftsman
+#  reservoir  --&gt;  reservoir
+#  airport  --&gt;  airport
+#  foundation  --&gt;  foundat
+#  trichotillomania  --&gt;  trichotillomania
+#  jewelry  --&gt;  jewelri
+#  Frenchman  --&gt;  frenchman
+#  chopper  --&gt;  chopper
+#  supercars  --&gt;  supercar
+#  men  --&gt;  men</code></pre><p>Most nouns are left untouched. Exceptions: the endings <code class="language-python">-tion</code>, <code class="language-python">-s</code> and<code class="language-python"> -y</code>. Only removal of <code class="language-python">-s</code> was relevant. Now, let's check verbs:</p><pre><code class="language-python">verbs = ['driven', 'swallowed', 'chewing', 'got', 'are', 'blew', 'saw']
+for a in verbs:
+    print(a, ' --&gt; ', snowball.stem(a))
+
+#  driven  --&gt;  driven
+#  swallowed  --&gt;  swallow
+#  chewing  --&gt;  chew
+#  got  --&gt;  got
+#  are  --&gt;  are
+#  blew  --&gt;  blew
+#  saw  --&gt;  saw</code></pre><p>Most verbs are left unchanged too. Snowball Stemmer transformed only <code class="language-python">swallowed</code> and <code class="language-python">chewing</code>, two obvious examples with <code class="language-python">-ed</code> and <code class="language-python">-ing</code> endings.</p><p>You can learn more about the non-English stemmers available in NLTK <a href="https://www.nltk.org/api/nltk.stem.html#module-nltk.stem" rel="noopener noreferrer nofollow" target="_blank">on nltk.org</a>.</p><h5 id="lemmatization-in-nltk">Lemmatization in NLTK</h5><p>Now let's talk about <strong>lemmatization</strong>. Even though it may seem similar to stemming, at first sight, there is a difference in how these algorithms work. Stemmers just remove affixes while <strong>lemmatizers</strong> are like people — they analyze the word, its context, its part of speech, and then give the answer. The result is always a real word in its dictionary form called a <strong>lemma</strong>. In general, lemmatizers rely on dictionaries (or corpora) when looking for lemmas.</p><p>To use lemmatizer from the NLTK library, you need to make sure that you have access to WordNet — you can do it by typing <code class="language-python">nltk.download('wordnet')</code>.</p><p><strong>WordNet</strong> is a large lexical database of the English language, which is used for lemmas in the NLTK lemmatizer. There is only one algorithm for lemmatization in NLTK.</p><p>We need to import the <code class="language-python">WordNetLemmatizer</code> class from the <code class="language-python">nltk.stem</code> module and create an instance of the class. We use the method <code class="language-python">lemmatize()</code> that takes a word we want to lemmatize as an argument.</p><pre><code class="language-python">from nltk.stem import WordNetLemmatizer
+
+
+lemmatizer = WordNetLemmatizer()
+lemmatizer.lemmatize('playing')  # playing</code></pre><p>As you can see, the word remained unchanged after lemmatization. As far as we know, lemmatizers need to know the context or the part of speech of the word. The default part of speech here is a noun and, as a noun, the word <em>'playing'</em> is its own lemma. In the small chart below you can find the part-of-speech tags in WordNet:</p><table align="center" border="1" cellpadding="1" cellspacing="1"><tbody><tr><td><p><strong>Part of speech</strong></p></td><td><p><strong>Tag</strong></p></td></tr><tr><td><p>Noun</p></td><td><p>n</p></td></tr><tr><td><p>Verb</p></td><td><p>v</p></td></tr><tr><td><p>Adjective</p></td><td><p>a</p></td></tr><tr><td><p>Adverb</p></td><td><p>r</p></td></tr></tbody></table><p>So, we just need to assign the tag that corresponds to the part of speech for our word.</p><pre><code class="language-python">lemmatizer.lemmatize('playing', pos='v')  # play
+lemmatizer.lemmatize('plays')             # play</code></pre><p>When we lemmatize a text we cannot manually tag all words, so you need to define a function that will assign a part-of-speech tag to each word.</p><p></p><div class="alert alert-primary"><p>Note that part-of-speech tags must be the same as in the WordNet! If the tags you got in the result of POS-tagging do not correspond to the ones in WordNet, you will need to convert them. For example, the default NLTK tagger (<code class="language-python">nltk.pos_tag()</code>) uses such tags as <code class="language-python">NN</code> that stands for "Noun, singular or mass" and <code class="language-python">VP</code> that stands for "Verb, the base form". If you want to lemmatize your text, you need to create a function that converts these tags to the WordNet ones:</p><pre><code class="language-python">def get_wordnet_tags(pos):
+    if pos == 'NN':
+        return 'n'
+    elif pos == 'VP':
+        return 'v'
+    # and so on</code></pre></div><p></p><p>Now, let's check how WordNetLemmatizer processes different parts of speech:</p><pre><code class="language-python">words = [
+    "effective",
+    "dangerous",
+    "careful",
+    "monetary",
+    "kind",
+    "supportive",
+    "rarer",
+    "rarest",
+]
+for a in words:
+    print(a, " --&gt; ", lemmatizer.lemmatize(a, pos="a"))
+
+
+#  effective  --&gt;  effective
+#  dangerous  --&gt;  dangerous
+#  careful  --&gt;  careful
+#  monetary  --&gt;  monetary
+#  kind  --&gt;  kind
+#  supportive  --&gt;  supportive
+#  rarer  --&gt;  rare
+#  rarest  --&gt;  rare</code></pre><p>Comparative and superlative adjectives were lemmatized correctly, and all other adjectives were left unchanged, as they should have been.</p><p>Next are nouns:</p><pre><code class="language-python">words = [
+    "wall",
+    "handcraftsman",
+    "reservoir",
+    "airport",
+    "foundation",
+    "trichotillomania",
+    "jewelry",
+    "Frenchman",
+    "chopper",
+    "supercars",
+    "men",
+]
+for a in words:
+    print(a, " --&gt; ", lemmatizer.lemmatize(a, pos="n"))
+
+
+#  wall  --&gt;  wall
+#  handcraftsman  --&gt;  handcraftsman
+#  reservoir  --&gt;  reservoir
+#  airport  --&gt;  airport
+#  foundation  --&gt;  foundation
+#  trichotillomania  --&gt;  trichotillomania
+#  jewelry  --&gt;  jewelry
+#  Frenchman  --&gt;  Frenchman
+#  chopper  --&gt;  chopper
+#  supercars  --&gt;  supercars
+#  men  --&gt;  men</code></pre><p>All nouns are left without changes: plurals were to be transformed into their single forms. It's also worth mentioning that the lemmatizer does not convert words into lower case (see <code class="language-python">Frenchman</code>), while Snowball Stemmer converted this noun into lowercase. At last, let's check lemmatization for verbs:</p><pre><code class="language-python">words = ['driven', 'swallowed', 'chewing', 'got', 'are', 'blew', 'saw']
+for a in words:
+    print(a, ' --&gt; ', lemmatizer.lemmatize(a, pos='v'))
+
+
+#  driven  --&gt;  drive
+#  swallowed  --&gt;  swallow
+#  chewing  --&gt;  chew
+#  got  --&gt;  get
+#  are  --&gt;  be
+#  blew  --&gt;  blow
+#  saw  --&gt;  saw</code></pre><p>The lemmatizer couldn't process <code class="language-python">saw</code> correctly, but still, it works better than the Snowball Stemmer. You just need to keep in mind that the algorithm may have mistakes while working with irregular verbs.</p><h5 id="stemming-vs-lemmatization">Stemming vs Lemmatization</h5><p>What should you choose? The answer to this question mainly depends on the task and the language you are dealing with. There is no universal stemmer or lemmatizer for all languages — each language is unique and has specific rules. So you need to use different algorithms with different languages.</p><p>For some languages, both stemming and lemmatization give good results, but for others, it is better to opt for lemmatization. For instance, languages like Russian, Latin, Finnish, or Turkish have grammatical <strong>cases</strong>, meaning that words have different affixes depending on their role in a sentence. Here is an example from Latin: "<em>rēx respondit"</em> can be translated as "<em>the king replied"</em>, and <em>rēgis fīlia</em> — as "<em>the daughter of the king"</em>. Both these words, "<em>rēx"</em> and "<em>rēgis"</em>, are forms of the noun "<em>rēx"</em>, which stands for "<em>king".</em> Cutting off the affixes will give us two different forms, so it is better to apply lemmatization here. Of course, it is possible to use stemming for such languages, but the list of rules on what affixes in which cases should be removed are going to be pretty long and complex.</p><p>Also, if you need to get valid words after text normalization, go for lemmatization. Sometimes, different forms of one word look completely different, and we just cannot write rules for them. For instance, in English, there are irregular verbs (<em>be</em> — <em>am</em>, <em>is</em>, <em>are</em>), plural forms of nouns (<em>goose</em> — <em>geese</em>, <em>mouse</em> — <em>mice</em>), and comparative and superlative adjectives (<em>bad</em> — <em>worse</em> — <em>the worst</em>). Lemmatizers will detect such cases and give the correct word as a result, while stemmers will not. Finally, do not forget about the resources. Lemmatizers usually scan a big dictionary or rely on corpora to find lemmas. It can take a lot of time. If you need to normalize text faster, stemming is the right choice.</p><p>Let's sum up the main points of using stemming and lemmatization.</p><table align="center" border="1" cellpadding="1" cellspacing="1"><tbody><tr><td><p> </p></td><td><p><strong>Stemming</strong></p></td><td><p><strong>Lemmatization</strong></p></td></tr><tr><td><p><strong>Pros</strong></p></td><td><ul><li><p>works fast (good for big data)</p></li><li><p>gives good results for some languages (English)</p></li><li><p>does not require much memory </p></li></ul></td><td><ul><li><p>gives a valid word as a result</p></li><li><p>recognizes cases of suppletion</p></li></ul></td></tr><tr><td><p><strong>Cons</strong></p></td><td><ul><li><p>gives as result a stem that may not be a real word</p></li></ul></td><td><ul><li><p>takes longer to process</p></li></ul></td></tr></tbody></table><h5 id="lemmatization-in-spacy">Lemmatization in Spacy</h5><p><code class="language-python">Spacy</code> provides only a lemmatizer. To use this lemmatizer, download the language model:</p><pre><code class="language-python">import spacy
+
+nlp = spacy.load('en_core_web_sm')</code></pre><p>Now, we can lemmatize a text. Let's try lemmatizing a list of adjectives. Mind that input should be raw text.</p><pre><code class="language-python">text = nlp('effective dangerous careful monetary kind supportive rarer rarest')
+
+for word in text:
+    print(word.text, ' --&gt; ', word.lemma_)
+
+
+#  effective  --&gt;  effective
+#  dangerous  --&gt;  dangerous
+#  careful  --&gt;  careful
+#  monetary  --&gt;  monetary
+#  kind  --&gt;  kind
+#  supportive  --&gt;  supportive
+#  rarer  --&gt;  rarer
+#  rarest  --&gt;  rarest</code></pre><p>As we see, the <code class="language-python">Spacy</code> lemmatizer cannot process comparative and superlative adjectives. Now let's check nouns:</p><pre><code class="language-python">for word in text:
+    print(word.text, ' --&gt; ', word.lemma_)
+
+
+#  wall  --&gt;  wall
+#  handcraftsman  --&gt;  handcraftsman
+#  reservoir  --&gt;  reservoir
+#  airport  --&gt;  airport
+#  foundation  --&gt;  foundation
+#  trichotillomania  --&gt;  trichotillomania
+#  jewelry  --&gt;  jewelry
+#  Frenchman  --&gt;  Frenchman
+#  chopper  --&gt;  chopper
+#  supercars  --&gt;  supercar
+#  men  --&gt;  man</code></pre><p>The lemmatizer is impeccable — it managed to process <code class="language-python">man</code> and <code class="language-python">supercars</code>. Finally, let's see how <code class="language-python">Spacy</code> lemmatizes verbs:</p><pre><code class="language-python">for word in text:
+    print(word.text, ' --&gt; ', word.lemma_)
+
+
+#  driven  --&gt;  drive
+#  swallowed  --&gt;  swallow
+#  chewing  --&gt;  chewing
+#  got  --&gt;  get
+#  are  --&gt;  be
+#  blew  --&gt;  blow
+#  saw  --&gt;  see</code></pre><p>Although Spacy couldn't lemmatize <code class="language-python">chewing</code>, it is still the best result.</p><h5 id="other-implementations">Other implementations</h5><p>NLTK is not the only library that has implementations of text normalization algorithms. Below is a list of libraries where you can find implementations of text normalization for English:</p><ul><li><p><a href="https://pypi.org/project/hunspell/" rel="noopener noreferrer nofollow" target="_blank">Hunspell</a> (stemming);</p></li><li><p><a href="https://radimrehurek.com/gensim/parsing/porter.html" rel="noopener noreferrer nofollow" target="_blank">Gensim</a> (stemming);</p></li><li><p><a href="https://spacy.io/api/lemmatizer" rel="noopener noreferrer nofollow" target="_blank">SpaCy</a> (lemmatization);</p></li><li><p><a href="https://textblob.readthedocs.io/en/dev/quickstart.html" rel="noopener noreferrer nofollow" target="_blank">TextBlob</a> (lemmatization);</p></li><li><p><a href="https://github.com/clips/pattern/wiki/pattern-en" rel="noopener noreferrer nofollow" target="_blank">Pattern</a> (lemmatization).</p></li></ul><h5 id="conclusion">Conclusion</h5><p>In this topic, we have learned about text preprocessing and the role of text normalization in it, the difference between two main approaches (stemming and lemmatization), and how to implement some algorithms using NLTK. Let's recap:</p><ul><li><p><strong>Text normalization</strong> is an important step of text preprocessing. It reduces various word forms to one single form;</p></li><li><p>There are two approaches to text normalization: <strong>stemming</strong> removes affixes according to some rules and keeps the <strong>stem</strong>, while <strong>lemmatization</strong> analyzes the word and returns its <strong>lemma</strong> with the help of a dictionary;</p></li><li><p>Both stemming and lemmatization have their advantages and disadvantages. Stemming works faster than lemmatization but the latter is usually more precise and always returns a real word.</p></li></ul><p>You can find more on this topic in <a href="https://hyperskill.org/blog/post/mastering-stemming-and-lemmatization" rel="noopener noreferrer nofollow" target="_blank">Mastering Stemming and Lemmatization</a> on Hyperskill Blog.</p>
+</div>

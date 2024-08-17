@@ -1,0 +1,292 @@
+<div class="step-text">
+<p>In NLP, we usually convert an input text/word/symbol into a numeric format to apply various mathematical operations (compare numbers, find patterns in numeric input, and so on) with them. The most convenient way is to provide a <strong>vector</strong> for each text unit. By vector, we mean an ordered sequence of numbers. We can use them to describe any element, be it a single word or an entire text. What a vector encodes depends solely on our objective and approach.</p>
+<p><strong>Bag-of-words</strong> is a concept of vectorizing our text or, more broadly, a concept of text representations.</p>
+<h5 id="transforming-symbol-to-number">Transforming symbol to number</h5>
+<p>The process of transforming a symbol into a number or a row of numbers (vectors) is called <strong>word embedding</strong>. In one of the types of embeddings, Word2Vec, vectors can be formed following the features of the input text. Word2Vec is a tool used in distributional semantics, while Bag-of-words is more like a tool for classification. For example, the word <code class="language-python">actor</code> will have the following encoded features: <code class="language-python">human</code>, <code class="language-python">profession</code>, <code class="language-python">masculine</code>, <code class="language-python">singular</code>, <code class="language-python">art</code> — all these features will be encoded in something like <code class="language-python">[0.3, 5.2, 1, 1, -3]</code> . But if the word is <code class="language-python">actress</code>, then our third feature will be changed to feminine, and the vector will probably look like this <code class="language-python">[0.3, 5.2, 2, 1, -3]</code>. This transformation is often represented in NLP as <code class="language-python">actor - man + female = actress</code> . But an example with actress is more like an exception because most words in English are unisex (take <code class="language-python">teacher</code> as an example, we don't say <code class="language-python">teacheress</code>). Still, words in English change their forms due to their number, so if the word is <code class="language-python">actors</code>, then we will revise the fourth feature in our vector row: <code class="language-python">actor - singular + plural = actors</code>. We showed five features on which our vector may depend, but generally, there are hundreds of such features (like small-big, dark-bright), and then the vector consists of hundreds of digits inside. </p>
+<p>As was said above, we vectorize not only words but letters, n-grams, phrases, sentences, or entire texts (articles, novels). For the last one — it's evident that we sometimes need to compare different texts: one text may be an adventure novel, and the second one a news article, and they will have different embeddings. But sometimes, we need to compare different types of objects. Take, for example, a bi-gram <code class="language-python">ballet dancer</code> and a unigram <code class="language-python">ballerina</code> — we may need to compare them the same way we have done with <code class="language-python">actor-actress</code>.</p>
+<p>With bag-of-words, we measure not semantics, but the frequency, so the number vectors are always bound to the number of times the words/n-gram/text/etc. are represented in the input.</p>
+<p>We can use word embeddings for different purposes:</p>
+<ul>
+<li>
+<p>measure similarity between objects (this task is well doable in Word2Vec)</p>
+</li>
+<li>
+<p>sentiment analysis (in Word2Vec)</p>
+</li>
+<li>
+<p>text classification (in Bag-of-words)</p>
+</li>
+</ul>
+<h5 id="bag-of-words-model-concept">Bag-of-words model concept</h5>
+<p>Here we consider each word independently, without considering the surrounding context. We describe a text as a sequence of all words it contains, but we do not keep its original order and place (hence the name). The resulting vector encodes the text and stores information about occurrences of words in it. The model is frequently used in document classification and information retrieval but also has applications in many other NLP tasks.</p>
+<p>Let's look at the example. We have three reviews, each consisting of one sentence:</p>
+<p>Review I: <em>easily the best album of the year.</em></p>
+<p>Review II: <em>the album is amazing.</em></p>
+<p>Review III: <em>loved the clean production!</em></p>
+<p>First, we need to design the vocabulary<strong>; </strong>it is the list of all known words across the data. If we ignore punctuation marks, it can look as follows: <code class="language-python">easily</code>, <code class="language-python">the</code>, <code class="language-python">best</code>, <code class="language-python">album</code>, <code class="language-python">of</code>, <code class="language-python">year</code>, <code class="language-python">is</code>, <code class="language-python">amazing</code>, <code class="language-python">loved</code>, <code class="language-python">clean</code>, <code class="language-python">production</code>. The vector length should equal the length of the vocabulary so that it will be <code class="language-python">11</code>.</p>
+<p>The next step is to count all occurrences of these words in each review. You can create a table, the columns of which will represent the units from the vocabulary:</p>
+<table border="1" cellpadding="1" cellspacing="1" style="width: 100%;">
+<tbody>
+<tr>
+<td>
+<p> </p>
+</td>
+<td>
+<p>easily</p>
+</td>
+<td>
+<p>the</p>
+</td>
+<td>
+<p>best</p>
+</td>
+<td>
+<p>album</p>
+</td>
+<td>
+<p>of</p>
+</td>
+<td>
+<p>year</p>
+</td>
+<td>
+<p>is</p>
+</td>
+<td>
+<p>amazing</p>
+</td>
+<td>
+<p>loved</p>
+</td>
+<td>
+<p>clean</p>
+</td>
+<td>
+<p>production</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>I</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>2</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>II</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>III</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>0</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>1</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>For one, the article <code class="language-python">the</code> appears twice in the first review, so we insert <code class="language-python">2</code> in the corresponding cell opposite the document name. We obtain the following representations, in which a number in the vector represents the count of the related word:</p>
+<pre><code class="language-no-highlight">Reviews I =  [1,2,1,1,1,1,0,0,0,0,0],                                                                                         
+
+Review II =  [0,1,0,1,0,0,1,1,0,0,0],                    
+
+Review III = [0,1,0,0,0,0,0,0,1,1,1]</code></pre>
+<h5 id="other-scoring-methods">Other scoring methods</h5>
+<p>There can be different ways of scoring. You can point out whether a word appears in a document or not. That leads to binary vectors, with <code class="language-python">0</code> for each absent word and <code class="language-python">1</code> for each present word. Now our representation will change a little:</p>
+<pre><code class="language-no-highlight">Reviews I =  [1,1,1,1,1,1,0,0,0,0,0],                                                                                         
+
+Review II =  [0,1,0,1,0,0,1,1,0,0,0],                    
+
+Review III = [0,1,0,0,0,0,0,0,1,1,1]</code></pre>
+<p>We create binary vectors when we are more concerned about the presence of words rather than their raw counts. The most straightforward sentiment analysis is an example of a task to which we can apply this representation.</p>
+<p>Another approach is to calculate frequencies. You need to score occurrences of a particular word divided by the total number of words in a document. Let's illustrate it with <code class="language-python">the</code>: it appears twice in the first review, comprising 7 words overall. Hence, the result of their division is 2/7. If we convert the number to a decimal fraction and round it up to two decimal places, we get <code class="language-python">0.29</code>. So, for all the reviews, we get these vectors:</p>
+<pre><code class="language-python">Review1 = [0.14,0.29,0.14,0.14,0.14,0.14,0.00,0.00,0.00,0.00,0.00]
+Review2 = [0.00,0.25,0.00,0.25,0.00,0.00,0.25,0.25,0.00,0.00,0.00]
+Review3 = [0.00,0.25,0.00,0.00,0.00,0.00,0.00,0.00,0.25,0.25,0.25]
+</code></pre>
+<p>Counting frequencies makes sense when we have several documents. It is a way to compare the ratio of a specific word across the data; for instance, if one document consists of 2525 words and the other 100100 words. However, raw counts will be enough to determine the most common terms if you have only one text.</p>
+<h5 id="advantages-and-disadvantages-of-bag-of-words">Advantages and disadvantages of bag-of-words</h5>
+<p>Now, we can name some advantages of the model:</p>
+<ul>
+<li>
+<p>The main benefit lies in its simplicity. All values in a vector are easy to compute, and we can always tell what they stand for. In addition, despite the simplicity, it usually shows good performance in classification tasks.</p>
+</li>
+<li>
+<p>We can encode an entire text right away. This approach is a good choice if we do not need to pay attention to any of the inner structures.</p>
+</li>
+<li>
+<p>We do not need a large dataset to build a model (as opposed to word embeddings you will learn about below).</p>
+</li>
+</ul>
+<p>However, there are some weaknesses, too:</p>
+<ul>
+<li>
+<p>The model pays no attention to inner relations and neglects the word context, so the semantics is left out. Consider <code class="language-python">buy</code> and <code class="language-python">purchase</code><em>;</em> in most cases, these words are synonyms and used in the same context, but we cannot access this information here.</p>
+</li>
+<li>
+<p>Often it provides sparse vectors with a massive amount of <strong>dimensions</strong>, that is, vector length; in the bag-of-words, it also equals the vocabulary length. Such vectors are both computation and memory-consuming.</p>
+</li>
+</ul>
+<p>There is nothing we can do about the first disadvantage. As for the second one, standard preprocessing steps, such as text normalization and stopword removal, may help us. After the first procedure, various forms of one word (<code class="language-python">goes</code>, <code class="language-python">going</code>) will become the base form (<code class="language-python">go</code>). This also applies to cases of <code class="language-python">Go</code> and <code class="language-python">go</code>: if we do not convert <code class="language-python">Go</code><em> </em>to lowercase, these words will be recognized as two different units in the dictionary. After the second procedure, some high-frequency but meaningless words (<code class="language-python">a</code>, <code class="language-python">the</code>, <code class="language-python">are</code>, prepositions, etc.) will be deleted. As a result, the vocabulary will include fewer items, and the vector will be shorter.</p>
+<p>However, these steps are inefficient with extensive texts and dictionaries of thousands or millions of words. Later in this topic, we will observe another type of representation, which allows us to solve this problem.</p>
+<h5 id="bag-of-words-in-python">Bag-of-words in Python</h5>
+<p>Manual creation of the bag-of-words model is a simple task in Python, and one of the application tasks will be concentrated on it. Here we will show how to use a ready-made model. This is possible in the <code class="language-python">sklearn</code> library:</p>
+<pre><code class="language-python">from sklearn.feature_extraction.text import CountVectorizer
+
+
+vectorizer = CountVectorizer()  #  initializes the class
+
+reviews = [
+    "easily the best album of the year.",
+    "the album is amazing.",
+    "loved the clean production!",
+]
+
+X = vectorizer.fit_transform(reviews)
+
+print(X.toarray())  # shows a matrix of all 3 reviews
+
+##  [[1 0 1 0 1 0 0 1 0 2 1]
+##   [1 1 0 0 0 1 0 0 0 1 0]
+##   [0 0 0 1 0 0 1 0 1 1 0]]</code></pre>
+<p>You will get a matrix. This matrix will contain three arrays, each corresponding to its respective review.</p>
+<p>You can also check the dictionary of the given bag-of-words output:</p>
+<pre><code class="language-python">print(vectorizer.get_feature_names_out())
+
+
+##  ['album', 'amazing', 'best', 'clean', 'easily', 'is', 'loved', 'of', 'production', 'the', 'year']</code></pre>
+<p>You can specify the <code class="language-python">CountVectorizer</code> class to a specific size of n-grams. Below, we specify that we need just bigrams, but if you want to see both unigrams and bigrams, then you can change the settings to <code class="language-python">ngram_range=(1, 2)</code>.</p>
+<pre><code class="language-python">vectorizer = CountVectorizer(ngram_range=(2, 2)) 
+
+X = vectorizer.fit_transform(reviews) 
+
+print(X.toarray())
+
+print(vectorizer.get_feature_names_out())
+
+
+##  [[0 1 1 0 1 0 0 1 0 1 0 1]
+##   [1 0 0 0 0 1 0 0 1 0 0 0]
+##   [0 0 0 1 0 0 1 0 0 0 1 0]]
+##  ['album is', 'album of', 'best album', 'clean production', 'easily the', 'is amazing', 'loved the', 'of the', 'the album', 'the best', 'the clean', 'the year']</code></pre>
+<p>We can also specify the stopwords. For that purpose, we need to download our stopwords corpus first:</p>
+<pre><code class="language-python">import nltk
+from nltk.corpus import stopwords
+nltk.download('stopwords')
+
+sw = stopwords.words('english')</code></pre>
+<p>Then, we can apply the downloaded stopword list to the <code class="language-python">CountVectorizer</code> class:</p>
+<pre><code class="language-python">vectorizer = CountVectorizer(ngram_range=(2, 2), stop_words=sw)
+
+X = vectorizer.fit_transform(reviews) 
+
+print(X.toarray())
+
+print(vectorizer.get_feature_names_out())
+
+
+##  [[0 1 1 0 1 0]
+##   [1 0 0 0 0 0]
+##   [0 0 0 1 0 1]]
+##  ['album amazing', 'album year', 'best album', 'clean production', 'easily best', 'loved clean']</code></pre>
+<p>As you can see, the arrays now are much shorter, and there are only a few bigrams in our dictionary because tokens like <code class="language-python">the</code> and <code class="language-python">is</code> are deleted.</p>
+<h5 id="conclusion">Conclusion</h5>
+<p>In this topic, we have deepened your knowledge of bag-of-words and showed you how we could implement it in the Python library. Ultimately, it's worth mentioning that this model has more complicated versions: Bag-of-n-grams or even (theoretically) bag-of-texts. For example, in Python implementation in the last code snippet, we showed how to get Bag-of-Bigrams in <code class="language-python">sklearn</code>.</p>
+<p>It is always a good idea to check the <a href="https://scikit-learn.org/stable/index.html" rel="noopener noreferrer nofollow" target="_blank">library's documentation (sklearn)</a>. We have omitted many details in this article. For example, we haven't discussed such parameters in the <code class="language-python">CountVectorizer</code> class as <code class="language-python">binary</code>, you can read about them in <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html" rel="noopener noreferrer nofollow" target="_blank">the documentation</a>. </p>
+</div>

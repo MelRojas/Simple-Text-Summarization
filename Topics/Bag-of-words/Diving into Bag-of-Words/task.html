@@ -1,0 +1,17 @@
+<div class="step-text">
+<p></p><div class="alert alert-warning">Hey there! This problem might be a bit unpredictable, but give it a go and let us know how you do!</div><p>What is true about the 'Bag-of-words' text representation? Consider the following code that uses <code class="java">scikit-learn</code>'s <code class="java">CountVectorizer()</code> to implement a bag-of-words model.</p><pre><code class="java">from sklearn.feature_extraction.text import CountVectorizer
+
+# define corpus
+
+corpus = [
+    'This is the first document.',
+    'This document is the second document.',
+    'And this is the third one.',
+    'Is this the first document?',
+]
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(corpus)
+print(vectorizer.get_feature_names_out())
+print(X.toarray())
+</code></pre>
+</div>

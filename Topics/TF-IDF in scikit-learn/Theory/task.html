@@ -1,0 +1,168 @@
+<div class="step-text">
+<p><code class="language-python">scikit-learn</code>, a well-known Python ML library, comprises a lot of useful and ready-made methods, metrics, and algorithms. In this topic, you will take a look at the various ways of working with one of the most popular word representations, TF-IDF,  in <code class="language-python">scikit-learn</code>.</p>
+<h5 id="class-parameters-and-attributes">Class parameters and attributes</h5>
+<p>The most convenient way to get a TF-IDF matrix for your data with <code class="language-python">scikit-learn</code> is to use the <code class="language-python">TfidfVectorizer</code> class. Take a look at the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html" rel="noopener noreferrer nofollow" target="_blank">official documentation</a>, if you're interested. At first, you need to import it and create an instance:</p>
+<pre><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+
+vectorizer = TfidfVectorizer()
+
+dataset = ["So no one told you life was gonna be this way",
+           "Your job's a joke, you're broke",
+           "Your love life's DOA",
+           "It's like you're always stuck in second gear",
+           "When it hasn't been your day, your week, your month",
+           "Or even your year, but",
+           "I'll be there for you"]</code></pre>
+<p>Each string in the dataset represents a separate document; there are seven documents in total. They form your document collection.</p>
+<p><code class="language-python">TfidfVectorizer</code> class has a lot of parameters. Let's have a look at some of them:</p>
+<ul style="list-style-type: square;">
+<li><code class="language-python">input='content'</code> is the default value. The program expects data as a sequence of strings or bytes, like your <code class="language-python">dataset</code> above. Alternatively, with <code class="language-python">input='file'</code>, you can provide a sequence of files (as files are expected, they have to be opened first), and with <code class="language-python">input='filename'</code> – a sequence of filenames;</li>
+<li>the <code class="language-python">encoding</code> parameter with the default value of <code class="language-python">utf-8</code> can be useful if your input data is a file object;</li>
+<li>a boolean <code class="language-python">use_idf</code>, when set to <code class="language-python">False</code>, tells the vectorizer to calculate only the TF;</li>
+<li>a boolean <code class="language-python">lowercase</code> is <code class="language-python">True</code> by default; if set to <code class="language-python">False</code>, there is no conversion to lowercase;</li>
+<li><code class="language-python">analyzer</code> is used to set the level of processing, it can be a character or a word level (<code class="language-python">analyzer='char'</code> or <code class="language-python">'word'</code>, correspondingly);</li>
+<li><code class="language-python">ngram_range=(1, 5)</code> tuple sets the lower (the first value) and the upper (the second value) n-gram limits<strong> </strong>for extraction; </li>
+<li><code class="language-python">stop_words</code> can provide you with a list of words that have to be removed from the data before calculations;</li>
+<li><code class="language-python">vocabulary</code> can allow you to calculate only the scores of the words you want;</li>
+<li><code class="language-python">min_df</code> and <code class="language-python">max_df</code> (<code class="language-python">float</code><em> </em>for percentage frequency or <code class="language-python">int</code><em> </em>for absolute frequency) can set the thresholds for a term document frequency.</li>
+</ul>
+<p>An <strong>n-gram</strong> is a sequence consisting of <span class="math-tex">\(n\)</span> items, words, or characters. Here are some examples of word bigrams: "my friend", "they will", "for a"; and character trigrams: "lin", "tyd", "mak".</p>
+<p>The following vectorizer, for example, takes a sequence of byte strings, converts it into lowercase, extracts unigrams, and calculates a TF-IDF score. It doesn't contain stop words (<code class="language-python">stop_words</code>) and doesn't make calculations for <code class="language-python">vocabulary</code>, however, the n-grams that occur in more than 60% of documents or in less than 1% of documents will be ignored.</p>
+<pre><code class="language-python">vectorizer = TfidfVectorizer(input='content', use_idf=True, lowercase=True, 
+analyzer='word', ngram_range=(1, 1), stop_words=None, vocabulary=None, min_df=0.01, max_df=0.60)</code></pre>
+<p></p><div class="alert alert-primary"><code class="language-python">scikit-learn</code> also contains the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html#sklearn.feature_extraction.text.CountVectorizer" rel="noopener noreferrer nofollow" target="_blank"><code class="language-python">CountVectorizer</code> class</a> — it builds vectors with term counts. You can use it to represent words in a text.</div>
+<h5 id="fit_transform">fit_transform()</h5>
+<p>Once you've created a vectorizer instance, it's time to obtain a <strong>TF-IDF matrix</strong>. You can use the <code class="language-python">fit_transform()</code> class method and <code class="language-python">shape</code> to print out its dimension:</p>
+<pre><code class="language-python">tfidf_matrix = vectorizer.fit_transform(dataset)
+print(f"Matrix dimension: {tfidf_matrix.shape}")  # Matrix dimension: (7, 38)</code></pre>
+<details><summary>Passing a file to <code class="language-python">TfidfVectorizer</code></summary>
+<p>If <code class="language-python">dataset</code> is a file-like object, you need to open it in advance. Moreover, <code class="language-python">fit_transform()</code> still needs a sequence as input, so you should include the opened file in a list:</p>
+<pre><code class="language-python">dataset = open('my_data.txt', 'r')
+
+vectorizer = TfidfVectorizer(input='file')
+tfidf_matrix = vectorizer.fit_transform([dataset])  # the argument must be a sequence</code></pre>
+</details>
+<p>As you've probably guessed, 7 rows in the matrix correspond to the number of documents in your dataset. So, the number of columns reflects the number of different terms (the <strong>vocabulary size</strong>). If you print the matrix(<code class="language-python">tfidf_matrix</code>), you will get something like this:</p>
+<pre><code class="language-python">print(tfidf_matrix)
+
+# (0, 32)	0.32013213618851233
+# (0, 29)	0.32013213618851233
+# ...
+# (3, 0)	0.35903541343111484
+# (3, 17)	0.35903541343111484
+# ...
+# (6, 1)	0.4115330003294659
+# (6, 36)	0.3054049222662203</code></pre>
+<p>To access the term weights of a particular document, use indexation. You will get a ready-to-use representation for your document:</p>
+<pre><code class="language-python">print(tfidf_matrix[6])
+
+# (0, 8)	0.4957715949559137
+# (0, 28)	0.4957715949559137
+# (0, 18)	0.4957715949559137
+# (0, 1)	0.4115330003294659
+# (0, 36)	0.3054049222662203</code></pre>
+<p>On the left, you can see the location of a particular term in the matrix (a document number, a term index); on the right, you can see the scores. Since you are printing a single document, the document number is zero for every row.</p>
+<details><summary>A visual explanation of the <code class="language-python">tfidf_matrix</code> output:</summary>
+<p style="text-align: center;"><picture><source media="(max-width: 480px)" srcset="https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/480x/-/format/webp/ 1x,https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/960x/-/format/webp/ 2x,https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/1440x/-/format/webp/ 3x" type="image/webp"/><source media="(max-width: 800px)" srcset="https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/800x/-/format/webp/ 1x,https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/1600x/-/format/webp/ 2x,https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/2400x/-/format/webp/ 3x" type="image/webp"/><source srcset="https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/1100x/-/format/webp/ 1x,https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/2200x/-/format/webp/ 2x,https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/-/stretch/off/-/resize/3000x/-/format/webp/ 3x" type="image/webp"/><img alt="An examplary tfidf_matrix with explanations for each part of the output(Document index location, Word index location, and Term weight)" height="127" name="mtx_exp.drawio.png" src="https://ucarecdn.com/7d4c8394-3b17-4d8d-964c-0d5d26cc0a3c/" width="381"/></picture></p>
+</details>
+<p></p><div class="alert alert-primary">Note that <code class="language-python">tfidf_matrix</code> is sparse and only outputs non-zero values of the vector for each document. You will see how to work with a more familiar representation later in the topic.</div>
+<h5 id="get_feature_names_out">get_feature_names_out()</h5>
+<p>The numbers above don't tell us much about the scores of particular words, as we don't know how the vocabulary is built. To see the vocabulary, use the <code class="language-python">get_feature_names_out()</code> method:</p>
+<pre><code class="language-python">terms = vectorizer.get_feature_names_out()
+print(terms)</code></pre>
+<p>Here's what it will output:</p>
+<pre><code class="language-no-highlight">['always', 'be', 'been', 'broke', 'but', 'day', 'doa', 'even', 'for', 
+'gear', 'gonna', 'hasn', 'in', 'it', 'job', 'joke', 'life', 'like', 'll', 
+'love', 'month', 'no', 'one', 'or', 're', 'second', 'so', 'stuck', 'there', 
+'this', 'told', 'was', 'way', 'week', 'when', 'year', 'you', 'your']</code></pre>
+<p>You haven't preprocessed the documents, so some words in the vocabulary may seem weird. It may be a good idea to do something about apostrophes to prevent some words like "hasn" from appearing.</p>
+<p>You can get a tangible representation by using a library for data analysis, like <a href="https://pandas.pydata.org/" rel="noopener noreferrer nofollow" target="_blank">Pandas</a>. You can also take a look at some of the results using standard Python tools as well.</p>
+<p>As you know, word indexes in a returned list correspond to those in the vocabulary. If you see the following line in the TF-IDF matrix: <code class="language-python"># (0, 8)    0.4957715949559137</code>, it means that you can access the corresponding word using the following indexation:</p>
+<pre><code class="language-python">print(terms[8])  # for</code></pre>
+<p>Bear in mind that the size of the collection can be much larger than yours. Because of this, printing the whole matrix (or even a part of it) for a specific document can take a long time and still won't be very representative. Nevertheless, if you need a more convenient way to represent the results, you can get a list of terms sorted by their TF-IDF scores. You will see how to do that shortly.</p>
+<h5 id="specifying-vocabulary-parameters">Specifying vocabulary parameters</h5>
+<p>Now let's consider a few examples that illustrate in detail how the <code class="language-python">stopwords</code> and <code class="language-python">vocabulary</code> parameters work.</p>
+<p>If you provide a list of stopwords, these words will be excluded<strong> </strong>from the vocabulary and, subsequently, from the matrix:</p>
+<pre><code class="language-python">stopwords = ['so', 'or', 'be']
+
+vectorizer = TfidfVectorizer(stop_words=stopwords)
+tfidf_matrix = vectorizer.fit_transform(dataset)
+terms = vectorizer.get_feature_names_out()
+print(terms)  # compare the list with the one above: 
+# words 'so', 'or', and 'be' are not in the vocabulary
+
+# ['always', 'been', 'broke', 'but', 'day', 'doa', 'even', 'for', 'gear', 
+# 'gonna', 'hasn', 'in', 'it', 'job', 'joke', 'life', 'like', 'll', 'love', 
+# 'month', 'no', 'one', 're', 'second', 'stuck', 'there', 'this', 'told', 
+# 'was', 'way', 'week', 'when', 'year', 'you', 'your']</code></pre>
+<p>In case you only want to know the importance of particular words, mention them in the <code class="language-python">vocabulary</code> parameter; the final matrix will only contain their scores:</p>
+<pre><code class="language-python">my_vocab = ['it', 'your']
+vectorizer = TfidfVectorizer(vocabulary=my_vocab)
+
+tfidf_matrix = vectorizer.fit_transform(dataset)
+terms = vectorizer.get_feature_names_out()
+
+print(terms)  # ['it', 'your']
+
+print(tfidf_matrix)
+
+# (1, 1)	1.0
+# (2, 1)	1.0
+# (3, 0)	1.0
+# (4, 1)	0.9122058069917823
+# (4, 0)	0.40973230979564096
+# (5, 1)	1.0
+</code></pre>
+<p>The first tuple value is the index of a document in your collection; the second is the index of a term in the vocabulary.</p>
+<h5 id="toarray">toarray()</h5>
+<p><code class="language-python">TfIdfVectorizer.fit_transform()</code> returns a sparse matrix. That matrix has a <code class="language-python">toarray()</code> method, which converts a sparse matrix into an n-dimensional array (there is a similar method, <code class="language-python">.todense()</code>, which returns a <code class="language-python">numpy</code> matrix, but let's focus on arrays here). This comes in useful when you want to better understand what's going on with the regular indexation or perform certain calculations. Let's see how it works with on an example:</p>
+<pre><code class="language-python">corpus = [
+    "The quick brown fox",
+    "Jumped over the lazy dog",
+]
+
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(corpus)</code></pre>
+<p>Your vocabulary looks like this (call <code class="language-python">vectorizer.vocabulary_</code>):</p>
+<pre><code class="language-no-highlight">{'the': 7, 'quick': 6, 'brown': 0, 'fox': 2, 'jumped': 3, 'over': 5, 'lazy': 4, 'dog': 1}</code></pre>
+<p>So you can look at the output above and say that the term 'quick', for example, has the index 6.</p>
+<p>Let's look at the first document in the collection:</p>
+<pre><code class="language-python">print(tfidf_matrix[0])
+#  (0, 2)	0.534046329052269
+#  (0, 0)	0.534046329052269
+#  (0, 6)	0.534046329052269
+#  (0, 7)	0.37997836159100784</code></pre>
+<p>The word 'fox' (index 2), 'brown' (index 0), and 'quick' (index 6) all have a score of <code class="language-python">0.534046329052269</code>, and 'the' (index 7) has a score of <code class="language-python">0.37997836159100784</code>.</p>
+<pre><code class="language-python">print(tfidf_matrix.toarray()[0])
+#   [0.53404633 0.         0.53404633 0.         0.         0.
+#    0.53404633 0.37997836]</code></pre>
+<p>Now, after you've called <code class="language-python">.toarray()</code>, you see the same output as described above, but now you can access a score for a specific word from the first document like this:</p>
+<pre><code class="language-python">tfidf_matrix.toarray()[0][vectorizer.vocabulary_['brown']]
+# 0.534046329052269</code></pre>
+<p>A small visual walk-through of <code class="language-python">.toarray()</code> interpretation:</p>
+<p style="text-align: center;"><picture><img alt="Considering vocabulary, TfIdfVectorizer transformation, and .toarray() call" height="300" name="TFIDF_sklearn.drawio.svg" src="https://ucarecdn.com/4d9a32eb-1956-4757-9c65-c7d436e90a55/" width="719"/></picture></p>
+<p>Here is an example of how to get the sorted array of the terms from the first document, considering the document collection:</p>
+<pre><code class="language-python">first_doc = tfidf_matrix[0].toarray()
+terms = vectorizer.get_feature_names_out()
+scores = [(first_doc[j][k], terms[k]) for j in range(len(first_doc)) for k in range(len(first_doc[j]))]
+scores = sorted(scores, reverse=True, key=lambda tup: (tup[0], tup[1]))</code></pre>
+<details><summary>The <code class="language-python">scores</code> output:</summary>
+<pre><code class="language-no-highlight">[(0.534046329052269, 'quick'),
+ (0.534046329052269, 'fox'),
+ (0.534046329052269, 'brown'),
+ (0.37997836159100784, 'the'),
+ (0.0, 'over'),
+ (0.0, 'lazy'),
+ (0.0, 'jumped'),
+ (0.0, 'dog')]</code></pre>
+</details>
+<h5 id="summary">Summary</h5>
+<p>Now, let's summarize what you should've taken away from this topic:</p>
+<ul>
+<li>You've familiarized yourselves with how TF-IDF is calculated in <code class="language-python">scikit-learn</code>;</li>
+<li>You've learned how to use the <code class="language-python">TfidfVectorizer</code> class to calculate a TF-IDF score;</li>
+<li>You took a look at <code class="language-python">TfidfVectorizer</code> parameters;</li>
+<li>You used a couple of class methods;</li>
+<li>You learned to interpret and work with output matrixes and use <code class="language-python">.toarray()</code> to work with the matrices more easily.</li>
+</ul>
+</div>
